@@ -1,4 +1,5 @@
 import sys
+from time import sleep
 
 from PIL import Image
 from PyQt5 import uic
@@ -11,6 +12,8 @@ from PyQt5.QtGui import *  # QMouseEvent, QKeyEvent, QPainter, QPaintEvent, QCol
 buttons
 добавление новых изображений
 распределение изображений на gridLayout
+
+добавение новых тегов, их присваивание к изображению
 '''
 
 
@@ -26,6 +29,7 @@ class ImageManager(QMainWindow):
 
         # values
         self.isExpandedMode = True
+        self.data = open('data.txt').readlines()
 
         # layouts declaration
         self.mainLayout = QHBoxLayout(self)
@@ -104,11 +108,13 @@ class ImageManager(QMainWindow):
         self.defaultImage.setPixmap(QPixmap('defaultImage.png'))
 
         # setting sizes
+        self.searchResultList.hide()
+
         self.turnModeButton.setMaximumSize(QSize(24, 24))
         self.addImageButton.setFixedSize(100, 28)
         self.addTagButton.setFixedSize(100, 28)
         self.dateSelectionWindowButton.setMaximumWidth(70)
-        self.searchDateTime.setMaximumWidth(120)
+        self.searchDateTime.setMaximumWidth(125)
         for i in (self.buttonPeriod, self.buttonAfter, self.buttonBefore):
             i.setMaximumWidth(80)
         self.searchLine.setMaximumWidth(300)
@@ -123,9 +129,12 @@ class ImageManager(QMainWindow):
 
         # setting buttons
         self.turnModeButton.clicked.connect(self.turnMode)
+        self.addImageButton.clicked.connect(self.addNewImage)
         # self.buttonBefore.clicked.connect()
         # self.buttonAfter.clicked.connect()
         # self.buttonPeriod.clicked.connect()
+
+        self.addNewImage()
 
     def turnMode(self):
         self.turnModeButton.setText('□' if self.isExpandedMode else '—')
@@ -136,101 +145,54 @@ class ImageManager(QMainWindow):
             i.hide() if self.isExpandedMode else i.show()
         self.isExpandedMode = not self.isExpandedMode
 
-    def resizeImage(self, image, width: int, height: int):
-        pass
+    def addNewTag(self):
+        newTag, okPressed = QInputDialog.getText(self, 'Добавление нового тега', 'Введите название тега')
 
-    def addNewImage(self, name: str):
-        # image = Image.open(name)
-        Image.open(name).save(f'{name.split(".")[0]}.png')
+    def addNewImage(self):
+        # image = Image.open(filePath)
+        filePath = QFileDialog.getOpenFileName(self, 'Выбор изображения', '',
+                                               'Картинка (*.png);;Картинка (*.jpg);;Все файлы (*)')[0]
+        # Image.open(filePath).save(f'{filePath.split(".")[0].split("/")[-1]}.png')
+        global exe
+        exe = AddNewImageDialog(filePath)
+        exe.show()
 
     def mouseMoveEvent(self, e: QMouseEvent):
         # self.statusBar().showMessage(f'{e.x()}, {e.y()}')
         self.statusBar().showMessage(str(self.searchResultList.size()))
 
-        '''self.horizontalLayout = QHBoxLayout(self)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.gridLayout = QGridLayout()
-        self.gridLayout.setObjectName("gridLayout")
-        self.defaultImage = QLabel(self)
-        self.defaultImage.setText("")
-        self.defaultImage.setObjectName("defaultImage")
-        self.gridLayout.addWidget(self.defaultImage, 0, 0, 1, 1)
-        self.horizontalLayout.addLayout(self.gridLayout)
+
+class AddNewImageDialog(QWidget):
+    def __init__(self, filePath):
+        super(AddNewImageDialog, self).__init__()
+        self.filePath = filePath
+        self.mainLayout = QHBoxLayout(self)
         self.verticalLayout = QVBoxLayout()
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.turnModeButton = QPushButton(self)
-        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.turnModeButton.sizePolicy().hasHeightForWidth())
-        self.turnModeButton.setSizePolicy(sizePolicy)
-        self.turnModeButton.setMaximumSize(QSize(28, 28))
-        self.turnModeButton.setObjectName("turnModeButton")
-        self.verticalLayout.addWidget(self.turnModeButton, 0, Qt.AlignRight)
-        self.horizontalLayout_2 = QHBoxLayout()
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.searchLine = QLineEdit(self)
-        sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.searchLine.sizePolicy().hasHeightForWidth())
-        self.searchLine.setSizePolicy(sizePolicy)
-        self.searchLine.setObjectName("searchLine")
-        self.horizontalLayout_2.addWidget(self.searchLine)
-        self.searchImage = QLabel(self)
-        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.searchImage.sizePolicy().hasHeightForWidth())
-        self.searchImage.setSizePolicy(sizePolicy)
-        self.searchImage.setMinimumSize(QSize(24, 24))
-        self.searchImage.setText("")
-        self.searchImage.setObjectName("searchImage")
-        self.horizontalLayout_2.addWidget(self.searchImage)
-        self.verticalLayout.addLayout(self.horizontalLayout_2)
-        self.horizontalLayout_3 = QHBoxLayout()
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.systemText = QLabel(self)
-        sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.systemText.sizePolicy().hasHeightForWidth())
-        self.systemText.setSizePolicy(sizePolicy)
-        self.systemText.setObjectName("systemText")
-        self.horizontalLayout_3.addWidget(self.systemText)
-        self.buttonBefore = QPushButton(self)
-        self.buttonBefore.setObjectName("buttonBefore")
-        self.horizontalLayout_3.addWidget(self.buttonBefore)
-        self.buttonAfter = QPushButton(self)
-        self.buttonAfter.setObjectName("buttonAfter")
-        self.horizontalLayout_3.addWidget(self.buttonAfter)
-        self.buttonPeriod = QPushButton(self)
-        self.buttonPeriod.setObjectName("buttonPeriod")
-        self.horizontalLayout_3.addWidget(self.buttonPeriod)
-        self.verticalLayout.addLayout(self.horizontalLayout_3)
-        self.dateTime = QDateTimeEdit(self)
-        self.dateTime.setObjectName("dateTime")
-        self.verticalLayout.addWidget(self.dateTime)
-        self.searchResultList = QListView(self)
-        sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.searchResultList.sizePolicy().hasHeightForWidth())
-        self.searchResultList.setSizePolicy(sizePolicy)
-        self.searchResultList.setMaximumSize(QSize(16777215, 150))
-        self.searchResultList.setObjectName("searchResultList")
-        self.verticalLayout.addWidget(self.searchResultList)
-        spacerItem = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem)
-        self.horizontalLayout.addLayout(self.verticalLayout)
-        # MainWindow.setCentralWidget(self)
-        # self.menubar = QMenuBar(MainWindow)
-        # self.menubar.setGeometry(QtCore.QRect(0, 0, 677, 26))
-        # self.menubar.setObjectName("menubar")
-        # MainWindow.setMenuBar(self.menubar)
-        # self.statusbar = QStatusBar(MainWindow)
-        # self.statusbar.setObjectName("statusbar")
-        # MainWindow.setStatusBar(self.statusbar)'''
+        self.selectedImage = QLabel()
+        self.searchTagLine = QLineEdit()
+        self.searchResultList = QListWidget()
+        self.spacer = QSpacerItem(20, 40, QSizePolicy.Fixed, QSizePolicy.Expanding)
+        self.addTagButton = QPushButton('Присвоить тег изображению')
+
+        self.mainLayout.addWidget(self.selectedImage)
+        self.mainLayout.addLayout(self.verticalLayout)
+        self.verticalLayout.addWidget(self.searchTagLine)
+        self.verticalLayout.addItem(self.spacer)
+        self.verticalLayout.addWidget(self.addTagButton)
+
+        self.setLayout(self.mainLayout)
+        self.selectedImage.setPixmap(resizeImage(filePath, 500, 300))
+
+        self.searchTagLine.textChanged.connect(self.searchTag)
+
+    def searchTag(self):
+        self.searchResultList.clear()
+        # search
+        self.verticalLayout.insertWidget(1, self.searchResultList)
+        self.searchResultList.addItem('123456789')
+
+def resizeImage(path: str, newWidth: int, newHeight: int):
+    return QPixmap(path).scaled(newWidth, newHeight)
 
 
 def except_hook(cls, exception, traceback):
@@ -243,3 +205,88 @@ if __name__ == '__main__':
     ex.show()
     sys.excepthook = except_hook
     sys.exit(app.exec())
+
+'''self.horizontalLayout = QHBoxLayout(self)
+           self.horizontalLayout.setObjectName("horizontalLayout")
+           self.gridLayout = QGridLayout()
+           self.gridLayout.setObjectName("gridLayout")
+           self.defaultImage = QLabel(self)
+           self.defaultImage.setText("")
+           self.defaultImage.setObjectName("defaultImage")
+           self.gridLayout.addWidget(self.defaultImage, 0, 0, 1, 1)
+           self.horizontalLayout.addLayout(self.gridLayout)
+           self.verticalLayout = QVBoxLayout()
+           self.verticalLayout.setObjectName("verticalLayout")
+           self.turnModeButton = QPushButton(self)
+           sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+           sizePolicy.setHorizontalStretch(0)
+           sizePolicy.setVerticalStretch(0)
+           sizePolicy.setHeightForWidth(self.turnModeButton.sizePolicy().hasHeightForWidth())
+           self.turnModeButton.setSizePolicy(sizePolicy)
+           self.turnModeButton.setMaximumSize(QSize(28, 28))
+           self.turnModeButton.setObjectName("turnModeButton")
+           self.verticalLayout.addWidget(self.turnModeButton, 0, Qt.AlignRight)
+           self.horizontalLayout_2 = QHBoxLayout()
+           self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+           self.searchLine = QLineEdit(self)
+           sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+           sizePolicy.setHorizontalStretch(0)
+           sizePolicy.setVerticalStretch(0)
+           sizePolicy.setHeightForWidth(self.searchLine.sizePolicy().hasHeightForWidth())
+           self.searchLine.setSizePolicy(sizePolicy)
+           self.searchLine.setObjectName("searchLine")
+           self.horizontalLayout_2.addWidget(self.searchLine)
+           self.searchImage = QLabel(self)
+           sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+           sizePolicy.setHorizontalStretch(0)
+           sizePolicy.setVerticalStretch(0)
+           sizePolicy.setHeightForWidth(self.searchImage.sizePolicy().hasHeightForWidth())
+           self.searchImage.setSizePolicy(sizePolicy)
+           self.searchImage.setMinimumSize(QSize(24, 24))
+           self.searchImage.setText("")
+           self.searchImage.setObjectName("searchImage")
+           self.horizontalLayout_2.addWidget(self.searchImage)
+           self.verticalLayout.addLayout(self.horizontalLayout_2)
+           self.horizontalLayout_3 = QHBoxLayout()
+           self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+           self.systemText = QLabel(self)
+           sizePolicy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+           sizePolicy.setHorizontalStretch(0)
+           sizePolicy.setVerticalStretch(0)
+           sizePolicy.setHeightForWidth(self.systemText.sizePolicy().hasHeightForWidth())
+           self.systemText.setSizePolicy(sizePolicy)
+           self.systemText.setObjectName("systemText")
+           self.horizontalLayout_3.addWidget(self.systemText)
+           self.buttonBefore = QPushButton(self)
+           self.buttonBefore.setObjectName("buttonBefore")
+           self.horizontalLayout_3.addWidget(self.buttonBefore)
+           self.buttonAfter = QPushButton(self)
+           self.buttonAfter.setObjectName("buttonAfter")
+           self.horizontalLayout_3.addWidget(self.buttonAfter)
+           self.buttonPeriod = QPushButton(self)
+           self.buttonPeriod.setObjectName("buttonPeriod")
+           self.horizontalLayout_3.addWidget(self.buttonPeriod)
+           self.verticalLayout.addLayout(self.horizontalLayout_3)
+           self.dateTime = QDateTimeEdit(self)
+           self.dateTime.setObjectName("dateTime")
+           self.verticalLayout.addWidget(self.dateTime)
+           self.searchResultList = QListView(self)
+           sizePolicy = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+           sizePolicy.setHorizontalStretch(0)
+           sizePolicy.setVerticalStretch(0)
+           sizePolicy.setHeightForWidth(self.searchResultList.sizePolicy().hasHeightForWidth())
+           self.searchResultList.setSizePolicy(sizePolicy)
+           self.searchResultList.setMaximumSize(QSize(16777215, 150))
+           self.searchResultList.setObjectName("searchResultList")
+           self.verticalLayout.addWidget(self.searchResultList)
+           spacerItem = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+           self.verticalLayout.addItem(spacerItem)
+           self.horizontalLayout.addLayout(self.verticalLayout)
+           # MainWindow.setCentralWidget(self)
+           # self.menubar = QMenuBar(MainWindow)
+           # self.menubar.setGeometry(QtCore.QRect(0, 0, 677, 26))
+           # self.menubar.setObjectName("menubar")
+           # MainWindow.setMenuBar(self.menubar)
+           # self.statusbar = QStatusBar(MainWindow)
+           # self.statusbar.setObjectName("statusbar")
+           # MainWindow.setStatusBar(self.statusbar)'''
