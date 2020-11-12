@@ -16,6 +16,14 @@ public class CustomView extends View {
     float density;
     float vertCellSize;
     float horCellSize;
+    boolean doDrawHit;
+    float posX;
+    float posY;
+
+    {
+        Log.i("CustomView", getWidth() + "");
+    }
+
 
     public CustomView(Context context) {
         super(context);
@@ -24,6 +32,8 @@ public class CustomView extends View {
     public CustomView(Context context, float density) {
         super(context);
         this.density = density;
+//        Log.i("CustomView", numberHorCells + ", " + numberVertCells);
+
     }
 
 //    public CustomView(int numberHorCells, int numberVertCells) {
@@ -36,12 +46,14 @@ public class CustomView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        numberHorCells = (getWidth() % cellsSize == 0) ? getWidth() / cellsSize - 1 : getWidth() / cellsSize;
-        numberVertCells = (getHeight() % cellsSize == 0) ? getHeight() / cellsSize - 1 : getHeight() / cellsSize;
+
+        Log.i("CustomView", getWidth() + "");
+        numberHorCells = getWidth() / cellsSize;
+        numberVertCells = getHeight() / cellsSize;
         vertCellSize = (float) getHeight() / numberVertCells;
         horCellSize = (float) getWidth() / numberHorCells;
         Paint paint = new Paint();
-        paint.setStrokeWidth(density);
+        paint.setStrokeWidth(this.density * 2.2f);
 
         for (int x = 0; x < numberVertCells; x++) {
             canvas.drawLine(x * horCellSize, 0, x * horCellSize, getHeight(), paint);
@@ -50,14 +62,48 @@ public class CustomView extends View {
         for (int y = 0; y < numberVertCells + 1; y++) {
             canvas.drawLine(0, y * vertCellSize, getWidth(), y * vertCellSize, paint);
         }
+
+        drawHit(canvas);
+//        canvas.drawLine(10, 0, 10, 1000, paint);
     }
 
+    private void drawHit(Canvas canvas) {
+         Paint paint = new Paint();
+         paint.setStrokeWidth(10);
+         paint.setColor(222222);
 
+        if (doDrawHit) {
+            canvas.drawCircle(posX, posY, 50, paint);
+        } else {
+            canvas.drawLine(10, 0, 10, 1000, paint);
+        }
+    }
 
+    public void hit() {
+
+    }
+
+    public boolean gotAHit(float x, float y) {
+
+        if (x - MainActivity.cellX * horCellSize < 40 &&
+                y - MainActivity.cellY * vertCellSize < 40 &&
+                x - MainActivity.cellX * horCellSize > 0 &&
+                y - MainActivity.cellY * vertCellSize > 0) {
+            return true;
+        }
+        return false;
+    }
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         Log.d(TAG, String.format("onTouchEvent: X: %f Y:%f", event.getX(), event.getY()));
+        if (gotAHit(event.getX(), event.getY())) {
+            doDrawHit = true;
+        } else {
+            posX = event.getX();
+            posY = event.getY();
+        }
 
+        invalidate();
         return super.onTouchEvent(event);
     }
 }
