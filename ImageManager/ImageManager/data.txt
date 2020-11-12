@@ -1,0 +1,6 @@
+defaultImage.png:tag;tag1;tag2;tag3;
+searchImage.png:tag4;tag5;tag6;
+defaultImage.png:tag;tag1;tag2;tag3;
+searchImage.png:tag4;tag5;tag6;
+defaultImage.png:tag;tag1;tag2;tag3;
+searchImage.png:tag4;tag5;tag6;
