@@ -1,16 +1,2 @@
 C:/Users/itnet/PycharmProjects/ImageManager/defaultImage.png:Введите имя:
 C:/Users/itnet/PycharmProjects/ImageManager/searchImage.png:Введите имя:
-C:/Users/itnet/PycharmProjects/ImageManager/Images/take-my-money.png:Введите имя:
-C:/Users/itnet/PycharmProjects/ImageManager/photo_2020-10-11_20-00-31.jpg:Введите имя:
-C:/Users/itnet/PycharmProjects/ImageManager/defaultImage.png:Введите имя:
-C:/Users/itnet/PycharmProjects/ImageManager/searchImage.png:Введите имя:
-C:/Users/itnet/PycharmProjects/ImageManager/Images/take-my-money.png:Введите имя:
-C:/Users/itnet/PycharmProjects/ImageManager/photo_2020-10-11_20-00-31.jpg:Введите имя:
-C:/Users/itnet/PycharmProjects/ImageManager/defaultImage.png:Введите имя:
-C:/Users/itnet/PycharmProjects/ImageManager/searchImage.png:Введите имя:
-C:/Users/itnet/PycharmProjects/ImageManager/Images/take-my-money.png:Введите имя:
-C:/Users/itnet/PycharmProjects/ImageManager/photo_2020-10-11_20-00-31.jpg:Введите имя:
-C:/Users/itnet/PycharmProjects/ImageManager/defaultImage.png:Введите имя:
-C:/Users/itnet/PycharmProjects/ImageManager/searchImage.png:Введите имя:
-C:/Users/itnet/PycharmProjects/ImageManager/Images/take-my-money.png:Введите имя:
-C:/Users/itnet/PycharmProjects/ImageManager/photo_2020-10-11_20-00-31.jpg:Введите имя:

@@ -150,20 +150,25 @@ class ImageManager(QMainWindow):
 
     def displayImages(self):
         lines = open('data.txt', encoding='utf-8').readlines()
-        for i in range(min(len(lines), 4)):
-            for j in range(len(lines) // 4 if (len(lines) % 4 == 0) else len(lines) // 4 + 1):
-                lines_index =
+        for j in range(len(lines) // 4 if (len(lines) % 4 == 0) else len(lines) // 4 + 1):
+            for i in range(min(len(lines), 4)):
+                lines_index = (i * j + i)
                 if j > 2:
                     self.table.setRowCount(self.table.rowCount() + 1)
                 image_button = QPushButton()
                 image_button.setFixedSize(250, 200)
-                image_button.setIcon(QIcon(resizeImage(getImagePath(lines[]), 250, 200)))
+                image_button.setIcon(QIcon(resizeImage(getImagePath(lines[lines_index]), 250, 200)))
                 image_button.setIconSize(QSize(250, 200))
-                image_button.clicked.connect(ImageEditing(lines[i]))
+                # print(lines_index, lines[lines_index],
+                #       self.callImageEditing(lines[lines_index]), sep='\n')
+                image_button.clicked.connect(self.callImageEditing)  # (lines[lines_index])
 
                 self.table.setCellWidget(j, i, image_button)
         for i in range(self.table.rowCount()):
             self.table.setRowHeight(i, 200)
+
+    def callImageEditing(self, sender):
+        ImageEditing(sender)
 
     def turnMode(self):
         self.turnModeButton.setText('□' if self.isExpandedMode else '—')
@@ -188,7 +193,6 @@ class ImageManager(QMainWindow):
         editingWindow = ImageEditing(line)
         editingWindow.show()
         # ImageEditing(filePath)
-
 
     def mouseMoveEvent(self, e: QMouseEvent):
         # self.statusBar().showMessage(f'{e.x()}, {e.y()}')
@@ -233,6 +237,7 @@ class ImageEditing(QWidget):
         self.searchTagLayout.addWidget(self.searchTagLine)
 
         self.setLayout(self.mainLayout)
+        # print(filePath)
         self.selectedImage.setPixmap(resizeImage(filePath, 500, 300))
 
         self.searchTagLine.textChanged.connect(self.searchTag)
