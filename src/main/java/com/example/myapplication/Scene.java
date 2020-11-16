@@ -49,6 +49,7 @@ public class Scene extends View {
 
     private void createRect(String color, Point corner, int width, int height) {
         rectangles[rectCount] = new Rectangle(color, corner, width, height);
+        rectCount += 1;
 
 //        this.colorRect = color;
 //        this.corner = corner;
