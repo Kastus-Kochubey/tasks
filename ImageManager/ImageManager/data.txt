@@ -1,6 +1,3 @@
-defaultImage.png:tag;tag1;tag2;tag3;
-searchImage.png:tag4;tag5;tag6;
-defaultImage.png:tag;tag1;tag2;tag3;
-searchImage.png:tag4;tag5;tag6;
-defaultImage.png:tag;tag1;tag2;tag3;
-searchImage.png:tag4;tag5;tag6;
+C:/Users/itnet/PycharmProjects/ImageManager/searchImage.png:Введите имя:image;bdfbsga;aasfavavr;bdfbsgars
+C:/Users/itnet/PycharmProjects/ImageManager/Images/meme_copy.png:Введите имя:
+C:/Users/itnet/PycharmProjects/ImageManager/Images/meme_copy.png:Введите имя:image

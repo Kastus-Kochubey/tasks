@@ -9,9 +9,9 @@ from PyQt5.QtGui import *  # QMouseEvent, QKeyEvent, QPainter, QPaintEvent, QCol
 
 # pyuic5 ImageManagerUI.ui -o UI.py
 '''
-в main class сделать метод редактирования изобр. и вызывать его при добавлении изобр.
-
-нажатие на изобр. в gridlayuot - редактирование изобр.
+поиск избражений по тегу или по имени
+документация
+ширина/высоты таблицы
 '''
 
 
@@ -110,7 +110,8 @@ class ImageManager(QMainWindow):
         self.addTagButton.setFixedSize(100, 28)
         self.turnSearchModeButton.setFixedSize(60, 28)
         for i in range(4):
-            self.table.setColumnWidth(i, 300)
+            self.table.setColumnWidth(i, 250)
+        self.table.setSelectionMode(0)
         self.table.verticalHeader().setVisible(False)
         self.table.horizontalHeader().setVisible(False)
         self.searchLine.setMaximumWidth(300)
@@ -150,20 +151,29 @@ class ImageManager(QMainWindow):
 
     def displayImages(self):
         lines = open('data.txt', encoding='utf-8').readlines()
+        self.table.setRowCount(len(lines) // 4 + 1 * bool(len(lines) % 4))
         for j in range(len(lines) // 4 if (len(lines) % 4 == 0) else len(lines) // 4 + 1):
+            # print('j', j)
             for i in range(min(len(lines), 4)):
-                lines_index = (i)
-                if j > 2:
-                    self.table.setRowCount(self.table.rowCount() + 1)
+                # print('i', i)
+                lines_index = (min(j * min(len(lines), 4) + i, len(lines) - 1))
+                print(j, i)
+
                 image_button = QPushButton()
                 image_button.setFixedSize(250, 200)
                 image_button.setIcon(QIcon(resizeImage(getImagePath(lines[lines_index]), 250, 200)))
                 image_button.setIconSize(QSize(250, 200))
                 # image_button.clicked.connect(lambda: ImageEditing(lines[lines_index]))  # (lines[lines_index])
+                image_button.clicked.connect(lambda: self.callImageEditing(lines[lines_index], lines_index))  # (lines[lines_index])
 
-                self.table.setCellWidget(i, j, image_button)
+                self.table.setCellWidget(j, i, image_button)
         for i in range(self.table.rowCount()):
             self.table.setRowHeight(i, 200)
+
+    def callImageEditing(self, line, index):
+        global editingWindow
+        editingWindow = ImageEditing(line, index)
+        editingWindow.show()
 
     # def callImageEditing(self, sender):
     #     ImageEditing(sender)
@@ -198,15 +208,19 @@ class ImageManager(QMainWindow):
 
 
 class ImageEditing(QWidget):
-    def __init__(self, dataline):
+    def __init__(self, dataline, index = None):
         super(ImageEditing, self).__init__()
+        self.indexInFile = index
         self.tags = []
+        global qwery
+        qwery = 0
 
         self.dataLine = dataline
         self.mainLayout = QHBoxLayout(self)
         self.verticalLayout = QVBoxLayout()
         self.enterNameLayout = QHBoxLayout()
         self.searchTagLayout = QHBoxLayout()
+        self.tagsLabel = QLabel('\n'.join(getImageTagsList(self.dataLine)))
         self.enterNameLayoutText = QLabel('Имя:')
         self.searchTagLayoutText = QLabel('Тег:')
         self.selectedImage = QLabel()
@@ -215,18 +229,19 @@ class ImageEditing(QWidget):
         self.searchResultList = QListWidget()
         self.spacer = QSpacerItem(20, 40, QSizePolicy.Fixed, QSizePolicy.Expanding)
         self.addTagButton = QPushButton('Присвоить тег изображению')
-        self.addImageButton = QPushButton('Сохранить')
+        self.saveImageButton = QPushButton('Сохранить')
 
         self.mainLayout.addWidget(self.selectedImage)
         self.mainLayout.addLayout(self.verticalLayout)
         self.verticalLayout.addLayout(self.enterNameLayout)
+        self.verticalLayout.addWidget(self.tagsLabel)
         self.verticalLayout.addLayout(self.searchTagLayout)
 
         self.verticalLayout.addWidget(self.searchTagLine)
         self.verticalLayout.addWidget(self.addTagButton)
         self.verticalLayout.addWidget(self.searchResultList)
         self.verticalLayout.addItem(self.spacer)
-        self.verticalLayout.addWidget(self.addImageButton)
+        self.verticalLayout.addWidget(self.saveImageButton)
 
         self.enterNameLayout.addWidget(self.enterNameLayoutText)
         self.enterNameLayout.addWidget(self.enterNameLine)
@@ -236,16 +251,25 @@ class ImageEditing(QWidget):
 
         self.setLayout(self.mainLayout)
         # print(filePath)
-        print(getImagePath(self.dataLine))
-        self.selectedImage.setPixmap(resizeImage(getImagePath(self.dataLine), 500, 300))
+        print(getImagePath(self.dataLine), 123456789)
+        self.selectedImage.setPixmap(resizeImage(getImagePath(self.dataLine), 600, 400))
 
         self.searchTagLine.textChanged.connect(self.searchTag)
         # self.addImageButton.clicked.connect(self)
         self.addTagButton.clicked.connect(self.AddTagToImage)
         self.searchResultList.itemClicked.connect(self.ChooseTag)
-        self.enterNameLine.textChanged.connect(self.EraseName)
+        self.saveImageButton.clicked.connect(self.saveImage)
+        self.enterNameLine.textChanged.connect(lambda: self.enterNameLine.clear())
 
         self.searchResultList.hide()
+
+    def saveImage(self):
+        with open('data.txt', encoding='utf-8', mode='r+t' if self.indexInFile else 'at') as file:
+            if self.indexInFile:
+                file.seek(self.indexInFile)
+            print(self.tags, 123)
+            file.write(f'{getImagePath(self.dataLine)}:{self.enterNameLine.text()}:{";".join(self.tags)}')
+        self.close()
 
     def searchTag(self):
         self.searchResultList.clear()
@@ -269,13 +293,13 @@ class ImageEditing(QWidget):
         self.searchTagLine.setText(self.searchResultList.item(self.searchResultList.currentRow()).text())
 
     def AddTagToImage(self):
-        self.tags.append(self.searchTagLine.text())
-        self.searchResultList.hide()
-        self.searchTagLine.clear()
-        self.searchResultList.clear()
-
-    def EraseName(self):
-        self.enterNameLine.clear()
+        tag = self.searchTagLine.text()
+        if tag in map(lambda x: x.lower(), open('tags.txt', encoding='utf-8').readlines()):
+            self.tags.append(tag.rstrip('\n'))
+            self.searchResultList.hide()
+            self.searchTagLine.clear()
+            self.searchResultList.clear()
+            self.tagsLabel.setText('\n'.join(self.tags))
 
 
 def resizeImage(path: str, newWidth: int, newHeight: int):
@@ -287,7 +311,11 @@ def getImageName(line: str):
 
 
 def getImagePath(line: str):
-    return ''.join(line.split(':')[0:2])
+    return ':'.join(line.split(':')[0:2])
+
+
+def getImageTagsList(line: str):
+    return line.split(':')[-1].split(';')
 
 
 def except_hook(cls, exception, traceback):
@@ -300,4 +328,3 @@ if __name__ == '__main__':
     ex.show()
     sys.excepthook = except_hook
     sys.exit(app.exec())
-
