@@ -1,2 +1,2 @@
-C:/Users/itnet/PycharmProjects/ImageManager/defaultImage.png:Введите имя:
-C:/Users/itnet/PycharmProjects/ImageManager/searchImage.png:Введите имя:
+C:/Users/itnet/PycharmProjects/ImageManager/Images/meme_copy.png:Takemoney:
+C:/Users/itnet/PycharmProjects/ImageManager/Images/photo_2020-10-11_20-01-10.jpg:BELISSIMO:image
