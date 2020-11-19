@@ -5,13 +5,14 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 
-public class Rectangle {
+public class Rectangle extends Shape {
     String colorRect;
     Point corner;
     int widthRect;
     int heightRect;
 
     public Rectangle(String colorRect, Point corner, int widthRect, int heightRect){
+        super(colorRect);
         this.colorRect = colorRect;
         this.corner = corner;
         this.widthRect = widthRect;

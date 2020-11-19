@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.Spinner;
@@ -14,6 +15,7 @@ public class MainActivity extends AppCompatActivity {
     RadioGroup shapes;
     Spinner colors;
     Scene scene;
+    Button delLastButt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +26,13 @@ public class MainActivity extends AppCompatActivity {
         shapes = findViewById(R.id.shapeGroup);
 //        colors = findViewById(R.id.colors);
 
+        delLastButt = findViewById(R.id.delLast);
+        delLastButt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scene.deleteLast();
+            }
+        });
         shapes.setOnCheckedChangeListener(new OnCheckedChangeListener(){
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {

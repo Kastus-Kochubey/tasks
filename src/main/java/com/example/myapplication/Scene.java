@@ -25,20 +25,25 @@ public class Scene extends View {
     String color = "#000000";
 
     // свойства прямоугольника
-    int rectCount;
-    Rectangle[] rectangles = new Rectangle[33];
+//    int rectCount;
+//    Rectangle[] rectangles = new Rectangle[33];
+//
+//
+//    // свойства круга
+//    int circleCount;
+//    Circle[] circles = new Circle[33];
+//
+//
+//
+//
+//    // свойства треугольника
+//    int triangleCount;
+//    Triangle[] triangles = new Triangle[33];
+
+    int shapesCount;
+    Shape[] shapes = new Shape[100];
 
 
-    // свойства круга
-    String colorCircle;
-    Point center;
-    float radius;
-
-    // свойства треугольника
-    String colorTriangle;
-    Point a = null;
-    Point b = null;
-    Point c = null;
 
 
     public Scene(Context context, @Nullable AttributeSet attrs) {
@@ -48,8 +53,8 @@ public class Scene extends View {
     }
 
     private void createRect(String color, Point corner, int width, int height) {
-        rectangles[rectCount] = new Rectangle(color, corner, width, height);
-        rectCount += 1;
+        shapes[shapesCount] = new Rectangle(color, corner, width, height);
+        shapesCount += 1;
 
 //        this.colorRect = color;
 //        this.corner = corner;
@@ -58,16 +63,13 @@ public class Scene extends View {
     }
 
     private void createCircle(String color, Point center, float radius) {
-        this.colorCircle = color;
-        this.center = center;
-        this.radius = radius;
+        shapes[shapesCount] = new Circle(color, center, radius);
+        shapesCount += 1;
     }
 
     private void createTriangle(String color, Point a, Point b, Point c) {
-        this.colorTriangle = color;
-        this.a = a;
-        this.b = b;
-        this.c = c;
+        shapes[shapesCount] = new Triangle(color, a, b, c);
+        shapesCount += 1;
     }
 
     @Override
@@ -79,33 +81,41 @@ public class Scene extends View {
         drawGrid(canvas);
         drawPoints(canvas);
 
-        drawRectangles(canvas);
-        drawCircle(canvas);
-        drawTriangle(canvas);
+        drawShapes(canvas);
+//        drawRectangles(canvas);
+//        drawCircle(canvas);
+//        drawTriangle(canvas);
     }
 
-    private void drawTriangle(Canvas canvas) {
-        if (a != null) {
-            Paint paint = new Paint();
-            paint.setColor(Color.parseColor(this.colorTriangle));
 
-            Path path = new Path();
-            path.moveTo(a.x, a.y);
-            path.lineTo(b.x, b.y);
-            path.lineTo(c.x, c.y);
-            path.lineTo(a.x, a.y);
-
-            canvas.drawPath(path, paint);
+    private void drawShapes(Canvas canvas){
+        for (int i = 0; i < shapesCount; i++) {
+            shapes[i].draw(canvas);
         }
     }
 
-    private void drawCircle(Canvas canvas) {
-        if (center != null) {
-            Paint paint = new Paint();
-            paint.setColor(Color.parseColor(this.colorCircle));
-            canvas.drawCircle(center.x, center.y, radius, paint);
-        }
-    }
+//    private void drawTriangle(Canvas canvas) {
+//        if (a != null) {
+//            Paint paint = new Paint();
+//            paint.setColor(Color.parseColor(this.colorTriangle));
+//
+//            Path path = new Path();
+//            path.moveTo(a.x, a.y);
+//            path.lineTo(b.x, b.y);
+//            path.lineTo(c.x, c.y);
+//            path.lineTo(a.x, a.y);
+//
+//            canvas.drawPath(path, paint);
+//        }
+//    }
+
+//    private void drawCircle(Canvas canvas) {
+//        if (center != null) {
+//            Paint paint = new Paint();
+//            paint.setColor(Color.parseColor(this.colorCircle));
+//            canvas.drawCircle(center.x, center.y, radius, paint);
+//        }
+//    }
 
 //    private void drawRect(Canvas canvas) {
 //        if (this.rect != null) {
@@ -113,12 +123,12 @@ public class Scene extends View {
 //        }
 //    }
 
-    public void drawRectangles(Canvas canvas) {
-        for (int i = 0; i < rectCount; i++) {
-            Rectangle r = rectangles[i];
-            r.draw(canvas);
-        }
-    }
+//    public void drawRectangles(Canvas canvas) {
+//        for (int i = 0; i < rectCount; i++) {
+//            Rectangle r = rectangles[i];
+//            r.draw(canvas);
+//        }
+//    }
 
     private void drawGrid(Canvas canvas) {
         Paint paint = new Paint();
@@ -211,6 +221,10 @@ public class Scene extends View {
     public void setTypeShape(String type) {
         this.typeShape = type;
         countPoints = 0;
+        invalidate();
+    }
+    public void deleteLast(){
+        this.shapesCount -= 1;
         invalidate();
     }
 
