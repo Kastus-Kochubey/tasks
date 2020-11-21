@@ -1,4 +1,2 @@
-Image
-qwerty
-money
-take
+default
+image

@@ -1,23 +1,35 @@
 import sys
-from time import sleep
-
-from PIL import Image
-from PyQt5 import uic
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *  # QApplication, QMessageBox, QMainWindow, QTableWidgetItem
 from PyQt5.QtGui import *  # QMouseEvent, QKeyEvent, QPainter, QPaintEvent, QColor
 
-# pyuic5 ImageManagerUI.ui -o UI.py
 '''
-поиск избражений по тегу или по имени
 документация
-ширина/высоты таблицы
 '''
 
-
+global imagesInLine
+imagesInLine = 5
 class ImageManager(QMainWindow):
+    """"""
+
     def __init__(self):
+
+        """Инициализация:\n
+                создание и настройка интерфейса"""
         super(ImageManager, self).__init__()
+        try:
+            with open('data.txt') as check:
+                pass
+
+            with open('tags.txt') as check:
+                pass
+        except FileNotFoundError:
+            with open('data.txt', mode='w') as check:
+                pass
+
+            with open('tags.txt', mode='w') as check:
+                pass
+
         self.setWindowTitle('Менеджер изображений')
         self.setMouseTracking(True)
 
@@ -27,16 +39,13 @@ class ImageManager(QMainWindow):
         # values
         self.isExpandedMode = True
         self.isNameSearchMode = True
-        # try:
-        #     self.data = open('data.txt').readlines()
-        # except FileNotFoundError:
-        #     open('data.txt', mode='w')
+        self.imageButtonsDict = {}
 
         # layouts declaration
         self.mainLayout = QHBoxLayout(self)
 
         self.gridLayout = QGridLayout()
-        self.table = QTableWidget(1, 4)
+        self.table = QTableWidget()
 
         self.verticalLayout = QVBoxLayout()
         self.searchLineLayout = QHBoxLayout()
@@ -62,15 +71,10 @@ class ImageManager(QMainWindow):
         self.mainSpacer3 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         # distribution
-        '''self.verticalLayout.setSizeConstraint(QLayout.SetMinimumSize)         # -------------------------------------
-        self.gridLayout.setSizeConstraint(QLayout.SetMaximumSize)
-
-        self.defaultImage.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.searchResultList.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)'''
-
         self.mainWidget.setLayout(self.mainLayout)
 
         self.mainLayout.addWidget(self.table)
+        self.mainLayout.addItem(self.mainSpacer)
 
         self.mainLayout.addLayout(self.verticalLayout)
 
@@ -84,7 +88,7 @@ class ImageManager(QMainWindow):
         self.layoutForAdd.addWidget(self.addImageButton, 0, Qt.AlignRight)
         self.layoutForAdd.addWidget(self.addTagButton)
 
-        self.table.setCellWidget(0, 0, self.defaultImage)
+        # self.table.setCellWidget(0, 0, self.defaultImage)
 
         self.searchLineLayout.addWidget(self.searchLine)
         self.searchLineLayout.addWidget(self.searchButton)
@@ -93,10 +97,11 @@ class ImageManager(QMainWindow):
         self.turnSearchModeLayout.addWidget(self.turnSearchModeButton)
 
         # setting images                            _____________________
-        diction = {}
-        self.defaultImage.setPixmap(QPixmap('defaultImage.png'))
+        # diction = {}
+        # self.defaultImage.setPixmap(QPixmap('defaultImage.png'))
 
         # setting sizes
+        # self.setMaximumHeight(1000)
         self.searchResultList.hide()
 
         self.searchButton.setMaximumSize(QSize(24, 24))
@@ -104,7 +109,8 @@ class ImageManager(QMainWindow):
         self.addImageButton.setFixedSize(100, 28)
         self.addTagButton.setFixedSize(100, 28)
         self.turnSearchModeButton.setFixedSize(60, 28)
-        for i in range(4):
+        self.table.setColumnCount(imagesInLine)
+        for i in range(5):
             self.table.setColumnWidth(i, 250)
         self.table.setSelectionMode(0)
         self.table.verticalHeader().setVisible(False)
@@ -116,26 +122,41 @@ class ImageManager(QMainWindow):
         self.turnModeButton.clicked.connect(self.turnMode)
         self.addImageButton.clicked.connect(self.addNewImage)
         self.addTagButton.clicked.connect(self.addNewTag)
-        self.searchButton.clicked.connect(self.searchImageByTag)
+        self.searchButton.clicked.connect(self.findImage)
         self.turnSearchModeButton.clicked.connect(self.turnSearchMode)
+        self.searchResultList.itemClicked.connect(lambda: self.callImageEditing())
 
         self.displayImages()
 
-    def searchImageByTag(self):
-        searchQuery = self.searchLine.text()
+    def findImage(self):
+        """Поиск изображений по имени или тегу"""
+        self.searchResultList.clear()
+        print(self.searchLine.text())
+        search_query = self.searchLine.text().lower()
 
-        searchResult = []
-        if searchQuery:
+        search_result = []
+        if search_query:
             for i in open('data.txt', encoding='utf-8').readlines():
-                i = i.lower()
-                if searchQuery in i:
-                    if searchQuery == i:
-                        searchResult.insert(0, i)
-                    searchResult.append(i)
+                if self.isNameSearchMode:
+                    name = getImageName(i).lower()
+                    if search_query in name:
+                        if search_query == name:
+                            search_result.insert(0, getImageName(i))
+                        search_result.append(getImageName(i))
+                else:
+                    for ind, tag in enumerate(map(lambda x: x.lower(), getImageTagsList(i))):
+                        if search_query in tag:
+                            if search_query == tag:
+                                search_result.insert(0, tag)
+                            else:
+                                search_result.append(getImageTagsList(i)[ind])
+
         self.searchResultList.show()
-        self.searchResultList.addItems(searchResult)
+        self.searchResultList.addItems(search_result)
 
     def turnSearchMode(self):
+        """Переключение режима поиска изображения\n
+                по имени <-> по тегу"""
         if self.isNameSearchMode:
             self.turnSearchModeButton.setText('тегу')
         else:
@@ -143,34 +164,59 @@ class ImageManager(QMainWindow):
         self.isNameSearchMode = not self.isNameSearchMode
 
     def displayImages(self):
+        """Отображение сохраненных изображений"""
+
+        # def columnsCount():
+        #     return min(len(lines), 4)
+
         lines = open('data.txt', encoding='utf-8').readlines()
-        self.table.setColumnCount(len(lines) // 4 + 1 * bool(len(lines) % 4))
-        rowsCount = len(lines) // 4 if (len(lines) % 4 == 0) else len(lines) // 4 + 1
-        columnsCount = min(len(lines), 4)
+
+        columnsCount = min(len(lines), imagesInLine)
+        self.table.setColumnCount(imagesInLine)
+        # columnsCount = columnsCount()
+        rowsCount = len(lines) // imagesInLine if (len(lines) % imagesInLine == 0) else len(lines) // imagesInLine + 1
+        self.table = QTableWidget(rowsCount, columnsCount)
         for row in range(rowsCount):
             for column in range(columnsCount):
-                lines_index = (min(row * min(len(lines), 4) + column, len(lines) - 1))
-
+                # lines_index = min(row * min(len(lines), 4) + column, len(lines) - 1)
+                lines_index = row * min(len(lines), imagesInLine) + column
+                if lines_index > min(row * min(len(lines), imagesInLine) + column, len(lines) - 1):
+                    break
+                # if row > self.table.rowCount():
+                #     self.table.setRowCount(self.table.rowCount() + 1)
                 image_button = QPushButton()
                 image_button.setFixedSize(250, 200)
+
+
+                # print(row, column, self.imageButtonsDict[image_button])
                 image_button.setIcon(QIcon(resizeImage(getImagePath(lines[lines_index]), 250, 200)))
                 image_button.setIconSize(QSize(250, 200))
-                image_button.clicked.connect(lambda: self.callImageEditing(lines[lines_index], lines_index))
+                image_button.clicked.connect(self.callImageEditing)
 
-                print(row, column, lines_index)
                 self.table.setCellWidget(row, column, image_button)
+                self.imageButtonsDict.setdefault(image_button, [lines[lines_index], lines_index])
+                # image_button.clicked.connect(lambda: self.callImageEditing(lines[lines_index], lines_index))
+                # if self.table.cellWidget(row, column) == None:
+                #     self.table.setCellWidget(row, column, image_button)
                 print(self.table.cellWidget(row, column))
-        for column in range(self.table.rowCount()):
-            self.table.setRowHeight(column, 200)
-        self.table.setFixedSize(columnsCount * 250, rowsCount * 200)
 
-    def callImageEditing(self, line, index):
-        print(line, index)
+
+        for i in range(self.table.rowCount()):
+            self.table.setRowHeight(i, 200)
+        self.table.setColumnCount(5)
+        self.table.setFixedSize(columnsCount * 250 + 2, rowsCount * 200)
+        # print(*self.imageButtonsDict.items(), sep='\n')
+
+
+    def callImageEditing(self):
+        sender = QApplication.instance().sender()
+        # print(self.imageButtonsDict[sender])
         global editingWindow
-        editingWindow = ImageEditing(line, index)
+        editingWindow = ImageEditing(*self.imageButtonsDict[sender])
         editingWindow.show()
 
     def turnMode(self):
+        """Сворачивание/разворачивание меню"""
         self.turnModeButton.setText('□' if self.isExpandedMode else '—')
         for i in (self.searchLine, self.addTagButton,
                   self.addImageButton, self.searchButton,
@@ -179,32 +225,35 @@ class ImageManager(QMainWindow):
         self.isExpandedMode = not self.isExpandedMode
 
     def addNewTag(self):
+        """Добавление нового тега"""
         newTag, okPressed = QInputDialog.getText(self, 'Новый тег', 'Введите новый тег')
         if okPressed:
             print(newTag, file=open('tags.txt', mode='a+t', encoding='utf-8'))
 
     def addNewImage(self):
-        filePath = QFileDialog.getOpenFileName(self, 'Выбор изображения', '',
-                                               'Картинка (*.png);;Картинка (*.jpg);;Все файлы (*)')[0]
-        line = f'{filePath}:Введите имя:'
+        """Вызов редактирования нового изборажения"""
+        # filePath = QFileDialog.getOpenFileName(self, 'Выбор изображения', '',
+        #                                        'Картинка (*.png);;Картинка (*.jpg);;Все файлы (*)')[0]
+        filePath = QFileDialog.getOpenFileName(self, 'Выбор изображения', '*.png;;*.jpg')[0]
+        if filePath:
+            line = f'{filePath}:Введите имя:'
+            global editingWindow
+            editingWindow = ImageEditing(line)
+            editingWindow.show()
 
-        global editingWindow
-        editingWindow = ImageEditing(line)
-        editingWindow.show()
-
-    def mouseMoveEvent(self, e: QMouseEvent):
-        # self.statusBar().showMessage(f'{e.x()}, {e.y()}')
-        self.searchResultList.hide()
+    # def mouseMoveEvent(self, e: QMouseEvent):
+    #     # self.statusBar().showMessage(f'{e.x()}, {e.y()}')
+    #     self.searchResultList.hide()
 
 
 class ImageEditing(QWidget):
+    """Окно редактирования изображений"""
+
     def __init__(self, dataline, index=None):
         super(ImageEditing, self).__init__()
         self.setWindowTitle('Редактор параметров изображения')
         self.indexInFile = index
         self.tags = getImageTagsList(dataline)
-        # global qwery
-        # qwery = 0
 
         self.dataLine = dataline
         self.mainLayout = QHBoxLayout(self)
@@ -230,7 +279,8 @@ class ImageEditing(QWidget):
 
         self.verticalLayout.addWidget(self.searchTagLine)
         self.verticalLayout.addWidget(self.addTagButton)
-        self.verticalLayout.addWidget(self.searchResultList)
+
+        self.verticalLayout.insertWidget(5, self.searchResultList)
         self.verticalLayout.addItem(self.spacer)
         self.verticalLayout.addWidget(self.saveImageButton)
 
@@ -256,25 +306,25 @@ class ImageEditing(QWidget):
             self.enterNameLine.clear()
 
     def saveImage(self):
-        self.tags = map(lambda x: x.rstrip("\n"), self.tags)
+        """Сохранение изображения"""
+        self.tags = map(lambda x: x.rstrip("\n"), (i for i in self.tags if i))
         lines = open('data.txt', encoding='utf-8').readlines()
+        # print('lines:', *lines, end='end')
         if self.indexInFile:
             lines[self.indexInFile] = f'{getImagePath(self.dataLine)}:' \
                                       f'{self.enterNameLine.text()}:' \
                                       f'{";".join(self.tags)}'
         else:
-            lines.append(f'{getImagePath(self.dataLine)}:{self.enterNameLine.text()}:{";".join(self.tags)}')
-        print(*lines, file=open('data.txt', encoding='utf-8', mode='w'))
-        print(self.dataLine)
-        print('Saving image')
+            lines.append(f'{getImagePath(self.dataLine).strip()}:{self.enterNameLine.text()}:{";".join(self.tags)}')
+        print(*map(lambda x: x.lstrip(), lines), file=open('data.txt', encoding='utf-8', mode='w'))
+        # print('Image saved')
         ImageManager.displayImages(ex)
         self.close()
 
     def searchTag(self):
+        """Поиск тега"""
         self.searchResultList.clear()
         self.searchResultList.show()
-        # search
-
         searchQuery = self.searchTagLine.text().lower()
         searchResult = []
         if searchQuery:
@@ -292,6 +342,7 @@ class ImageEditing(QWidget):
         self.searchTagLine.setText(self.searchResultList.item(self.searchResultList.currentRow()).text())
 
     def AddTagToImage(self):
+        """Присвоение тега изображению"""
         tag = self.searchTagLine.text()
         if tag in map(lambda x: x.lower(), open('tags.txt', encoding='utf-8').readlines()):
             self.tags.append(tag.rstrip('\n'))
@@ -310,7 +361,7 @@ def getImageName(line: str):
 
 
 def getImagePath(line: str):
-    return ':'.join(line.split(':')[0:2])
+    return ':'.join(line.split(':')[0:2]).lstrip()
 
 
 def getImageTagsList(line: str):
